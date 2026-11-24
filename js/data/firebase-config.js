@@ -1,18 +1,14 @@
-// Firebase web app config. Paste the object from:
-// Firebase console → Project settings → General → Your apps → Web app → SDK setup (Config).
+// Firebase web app config (Firebase console → Project settings → Your apps → puipui-web).
 //
-// These values identify your project; they are not secrets and are safe to commit.
-// What visitors can read or write is controlled by firestore.rules — deploy those too.
+// These values identify the project; they are not secrets and are safe to commit.
+// What visitors can read or write is controlled by firestore.rules.
 //
-// While this is null, the store runs fully offline (localStorage only).
-export const FIREBASE_CONFIG = null;
-
-// Example shape:
-// export const FIREBASE_CONFIG = {
-//   apiKey: 'AIza…',
-//   authDomain: 'your-project.firebaseapp.com',
-//   projectId: 'your-project',
-//   storageBucket: 'your-project.appspot.com',
-//   messagingSenderId: '…',
-//   appId: '1:…:web:…',
-// };
+// Set this to null to run the store fully offline (localStorage only).
+export const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDCjLuJMr66MMDtN7gqVbgugyn1f1TIBus',
+  authDomain: 'puipui-goods.firebaseapp.com',
+  projectId: 'puipui-goods',
+  storageBucket: 'puipui-goods.firebasestorage.app',
+  messagingSenderId: '945438982282',
+  appId: '1:945438982282:web:fbe77c9bed99c4250f6d73',
+};
