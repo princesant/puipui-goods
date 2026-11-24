@@ -1,0 +1,75 @@
+rules_version = '2';
+
+// Puipui Goods — Firestore security rules.
+// The site is public and has no sign-in, so every write is create-only and
+// strictly validated. Nothing except reviews can be read from the browser;
+// read orders, messages and newsletter sign-ups in the Firebase console.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function str(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+    function stamped() {
+      return request.resource.data.createdAt == request.time;
+    }
+    function emailOk(v) {
+      return str(v, 5, 200) && v.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    }
+
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['productId', 'rating', 'title', 'body', 'name', 'createdAt'])
+        && str(request.resource.data.productId, 1, 80)
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && str(request.resource.data.title, 1, 80)
+        && str(request.resource.data.body, 1, 800)
+        && str(request.resource.data.name, 1, 30)
+        && stamped();
+      allow update, delete: if false;
+    }
+
+    match /orders/{id} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'ref', 'demo', 'firstName', 'city', 'state', 'shipping', 'payment', 'gift',
+          'items', 'subtotal', 'discount', 'shippingCost', 'total', 'createdAt'])
+        && request.resource.data.demo == true
+        && str(request.resource.data.ref, 4, 20)
+        && str(request.resource.data.firstName, 1, 40)
+        && str(request.resource.data.city, 1, 60)
+        && str(request.resource.data.state, 1, 60)
+        && request.resource.data.shipping in ['standard', 'express', 'pickup']
+        && request.resource.data.payment in ['upi', 'card', 'cod']
+        && request.resource.data.gift is bool
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0 && request.resource.data.items.size() <= 50
+        && request.resource.data.total is number && request.resource.data.total >= 0
+        && stamped();
+      allow read, update, delete: if false;
+    }
+
+    match /newsletter/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt'])
+        && emailOk(request.resource.data.email)
+        && stamped();
+      allow read, update, delete: if false;
+    }
+
+    match /messages/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'topic', 'message', 'createdAt'])
+        && str(request.resource.data.name, 1, 80)
+        && emailOk(request.resource.data.email)
+        && request.resource.data.topic in ['order', 'product', 'wholesale', 'store', 'other']
+        && str(request.resource.data.message, 10, 3000)
+        && stamped();
+      allow read, update, delete: if false;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
